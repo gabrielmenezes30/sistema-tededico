@@ -1,57 +1,286 @@
 {% extends 'base.html' %}
 {% block title %}Criar Presente{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-bold text-[var(--casal-accent)] text-center mb-4">Criar Presente</h1>
-<form method="post" enctype="multipart/form-data" class="space-y-4">
-  {% csrf_token %}
-  <input type="text" name="titulo" placeholder="Título" class="w-full border p-2 rounded" required>
-  <textarea name="mensagem" placeholder="Mensagem" class="w-full border p-2 rounded" rows="4" required></textarea>
-  <input type="file" name="imagem" class="w-full border p-2 rounded">
-  <input type="text" name="video_url" placeholder="URL do vídeo (opcional)" class="w-full border p-2 rounded">
-
-  <hr class="my-6">
-  <h2 class="text-xl font-semibold text-[var(--casal-accent)] mb-2">Personalizar Aparência (Opcional)</h2>
-  
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+  {# Coluna do Formulário #}
   <div>
-    <label for="cor_fundo" class="block text-sm font-medium text-gray-700">Cor de Fundo:</label>
-    <div class="flex items-center space-x-2">
-      <input type="color" id="cor_fundo_picker" value="#fff0f5" class="h-10 w-10 border-gray-300 rounded-md">
-      <input type="text" name="cor_fundo" id="cor_fundo" placeholder="Ex: #FFF0F5 (Padrão)" class="w-full border p-2 rounded" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
-    </div>
-    <p class="text-xs text-gray-500 mt-1">Escolha uma cor ou digite o código hexadecimal (ex: #FFB6C1).</p>
+    <h1 class="text-2xl font-bold text-[var(--casal-accent)] text-center mb-4">Criar Presente</h1>
+    <form method="post" enctype="multipart/form-data" class="space-y-4" id="formCriarPresente">
+      {% csrf_token %}
+      <input type="text" name="titulo" placeholder="Título" class="w-full border p-2 rounded" required>
+      <textarea name="mensagem" placeholder="Mensagem" class="w-full border p-2 rounded" rows="4" required></textarea>
+      <input type="file" name="imagem" class="w-full border p-2 rounded" accept="image/*">
+      <input type="text" name="video_url" placeholder="URL do vídeo (YouTube, Vimeo, etc.)" class="w-full border p-2 rounded">
+
+      <hr class="my-6">
+      <h2 class="text-xl font-semibold text-[var(--casal-accent)] mb-2">Personalizar Aparência (Opcional)</h2>
+      
+      <div>
+        <label for="cor_fundo_input" class="block text-sm font-medium text-gray-700">Cor de Fundo:</label>
+        <div class="flex items-center space-x-2">
+          <input type="color" id="cor_fundo_picker" value="#fff0f5" class="h-10 w-10 border-gray-300 rounded-md p-0.5">
+          <input type="text" name="cor_fundo" id="cor_fundo_input" placeholder="Ex: #FFF0F5 (Padrão)" class="w-full border p-2 rounded" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Escolha uma cor ou digite o código hexadecimal.</p>
+      </div>
+
+      <div>
+        <label for="cor_destaque_input" class="block text-sm font-medium text-gray-700">Cor de Destaque:</label>
+        <div class="flex items-center space-x-2">
+          <input type="color" id="cor_destaque_picker" value="#ff69b4" class="h-10 w-10 border-gray-300 rounded-md p-0.5">
+          <input type="text" name="cor_destaque" id="cor_destaque_input" placeholder="Ex: #FF69B4 (Padrão)" class="w-full border p-2 rounded" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Escolha uma cor ou digite o código hexadecimal.</p>
+      </div>
+      
+      {# Contêiner para as mini telinhas de temas #}
+      <div class="pt-3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sugestões de Temas:</label>
+        <div id="themeSuggestionsContainer" class="flex flex-wrap gap-2 cursor-default">
+            {# As mini telinhas de temas serão inseridas aqui pelo JavaScript #}
+        </div>
+      </div>
+      
+      <input type="url" name="musica_url" placeholder="URL da Música de Fundo (link direto .mp3)" class="w-full border p-2 rounded mt-4">
+
+      <button type="submit" class="bg-[var(--casal-accent)] text-white px-4 py-2 rounded w-full mt-6 hover:opacity-90">Criar Presente</button>
+    </form>
   </div>
 
-  <div>
-    <label for="cor_destaque" class="block text-sm font-medium text-gray-700">Cor do Texto:</label>
-    <div class="flex items-center space-x-2">
-      <input type="color" id="cor_destaque_picker" value="#ff69b4" class="h-10 w-10 border-gray-300 rounded-md">
-      <input type="text" name="cor_destaque" id="cor_destaque" placeholder="Ex: #FF69B4 (Padrão)" class="w-full border p-2 rounded" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
+  {# Coluna da Pré-visualização (permanece a mesma) #}
+  <div class="mt-8 md:mt-0">
+    <h2 class="text-xl font-bold text-[var(--casal-accent)] text-center mb-4">Pré-visualização</h2>
+    <div id="presente-preview-wrapper" class="sticky top-8">
+        <div id="presente-preview-container" class="w-full mx-auto bg-white shadow-xl rounded-2xl p-6 border-2" style="border-color: var(--casal-accent); background-color: var(--casal-bg);">
+            <h1 id="preview-titulo" class="text-2xl font-bold text-center mb-4" style="color: var(--casal-accent);">Título do Presente</h1>
+            <p id="preview-mensagem" class="text-center mb-4 text-gray-700 break-words">Sua mensagem carinhosa aparecerá aqui...</p>
+            <div id="preview-imagem-container" class="flex justify-center mb-4" style="display: none;">
+                <img id="preview-imagem" src="#" alt="Prévia da Imagem" class="max-w-full h-auto rounded-xl max-h-60 object-contain">
+            </div>
+            <div id="preview-video-container" class="flex justify-center mb-4" style="display: none;">
+                <div class="aspect-w-16 aspect-h-9 w-full">
+                  <iframe id="preview-video" class="rounded-xl w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div id="preview-musica-container" class="flex justify-center my-6" style="display: none;">
+                <audio id="preview-musica" controls class="w-full max-w-md rounded-lg">
+                    <source id="preview-musica-source" src="" type="audio/mpeg">
+                    Seu navegador não suporta o elemento de áudio.
+                </audio>
+            </div>
+            <div class="text-center mt-6" id="preview-qrcode-placeholder">
+                <h3 class="font-semibold text-lg mb-2" style="color: var(--casal-accent);">QR Code:</h3>
+                <div class="w-32 h-32 bg-gray-200 mx-auto flex items-center justify-center rounded">
+                    <span class="text-gray-500 text-sm">Será gerado</span>
+                </div>
+            </div>
+        </div>
     </div>
-    <p class="text-xs text-gray-500 mt-1">Escolha uma cor ou digite o código hexadecimal (ex: #FF1493).</p>
   </div>
-  
-  <input type="url" name="musica_url" placeholder="URL da Música de Fundo (opcional)" class="w-full border p-2 rounded">
-
-  <button type="submit" class="bg-[var(--casal-accent)] text-white px-4 py-2 rounded w-full mt-6 hover:opacity-90">Criar</button>
-</form>
+</div>
 
 <script>
-  // Script simples para sincronizar o color picker com o input text
-  document.getElementById('cor_fundo_picker').addEventListener('input', function(e) {
-    document.getElementById('cor_fundo').value = e.target.value;
-  });
-  document.getElementById('cor_fundo').addEventListener('input', function(e) {
-    if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(e.target.value)) {
-        document.getElementById('cor_fundo_picker').value = e.target.value;
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formCriarPresente');
+    
+    const previewContainer = document.getElementById('presente-preview-container');
+    const previewTitulo = document.getElementById('preview-titulo');
+    const previewMensagem = document.getElementById('preview-mensagem');
+    const previewImagemContainer = document.getElementById('preview-imagem-container');
+    const previewImagem = document.getElementById('preview-imagem');
+    const previewVideoContainer = document.getElementById('preview-video-container');
+    const previewVideo = document.getElementById('preview-video');
+    const previewMusicaContainer = document.getElementById('preview-musica-container');
+    const previewMusica = document.getElementById('preview-musica');
+    const previewMusicaSource = document.getElementById('preview-musica-source');
+    const previewQrCodePlaceholderTitle = document.querySelector('#preview-qrcode-placeholder h3');
+
+    const inputTitulo = form.querySelector('input[name="titulo"]');
+    const inputMensagem = form.querySelector('textarea[name="mensagem"]');
+    const inputImagem = form.querySelector('input[name="imagem"]');
+    const inputVideoUrl = form.querySelector('input[name="video_url"]');
+    const inputCorFundoText = document.getElementById('cor_fundo_input'); 
+    const inputCorDestaqueText = document.getElementById('cor_destaque_input');
+    const inputMusicaUrl = form.querySelector('input[name="musica_url"]');
+    const corFundoPicker = document.getElementById('cor_fundo_picker');
+    const corDestaquePicker = document.getElementById('cor_destaque_picker');
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const defaultCasalBg = rootStyles.getPropertyValue('--casal-bg').trim() || '#fff0f5';
+    const defaultCasalAccent = rootStyles.getPropertyValue('--casal-accent').trim() || '#ff69b4';
+
+    const predefinedThemes = [
+        { name: "Padrão Romântico", background: '#FFF0F5', accent: '#FF69B4', textColor: '#374151' },
+        { name: "Céu e Sol", background: '#E0F7FA', accent: '#FFCA28', textColor: '#374151' },
+        { name: "Lavanda Serena", background: '#F3E5F5', accent: '#BA68C8', textColor: '#374151' },
+        { name: "Menta Fresca", background: '#E0F2F1', accent: '#4DB6AC', textColor: '#374151' },
+        { name: "Pêssego Delicado", background: '#FFF3E0', accent: '#FF8A65', textColor: '#374151' },
+        { name: "Jardim Secreto", background: '#E8F5E9', accent: '#66BB6A', textColor: '#374151' },
+        { name: "Sonho Azul", background: '#E3F2FD', accent: '#42A5F5', textColor: '#374151' },
+        { name: "Glamour Noturno", background: '#263238', accent: '#FDD835', textColor: '#F3F4F6' }, // Fundo escuro, texto claro
+        { name: "Vinho e Ouro", background: '#4A0404', accent: '#FFD700', textColor: '#F3F4F6' },    // Fundo escuro, texto claro
+    ];
+
+    // Função para aplicar um tema e atualizar a preview
+    function applyTheme(theme) {
+        inputCorFundoText.value = theme.background;
+        inputCorDestaqueText.value = theme.accent;
+
+        if (corFundoPicker) corFundoPicker.value = theme.background;
+        if (corDestaquePicker) corDestaquePicker.value = theme.accent;
+        
+        // Passar a cor do texto do tema para a função updatePreview se necessário
+        updatePreview(theme.textColor);
     }
-  });
-  document.getElementById('cor_destaque_picker').addEventListener('input', function(e) {
-    document.getElementById('cor_destaque').value = e.target.value;
-  });
-  document.getElementById('cor_destaque').addEventListener('input', function(e) {
-    if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(e.target.value)) {
-        document.getElementById('cor_destaque_picker').value = e.target.value;
+
+    // Função para exibir as sugestões de temas como mini telinhas
+    function displayThemeSuggestions() {
+        const container = document.getElementById('themeSuggestionsContainer');
+        if (!container) return;
+        container.innerHTML = ''; // Limpa sugestões anteriores
+
+        predefinedThemes.forEach(theme => {
+            const themeDiv = document.createElement('div');
+            themeDiv.classList.add('w-10', 'h-10', 'rounded', 'border', 'border-gray-400', 'flex', 'overflow-hidden', 'shadow', 'cursor-pointer', 'hover:ring-2', 'hover:ring-offset-1');
+            themeDiv.style.borderColor = theme.accent; // Borda com a cor de destaque para melhor visualização
+            themeDiv.style.boxShadow = `0 0 0 1px ${theme.accent}`; // Borda sutil interna
+            themeDiv.title = theme.name;
+
+            const bgPart = document.createElement('div');
+            bgPart.style.width = '50%';
+            bgPart.style.backgroundColor = theme.background;
+
+            const accentPart = document.createElement('div');
+            accentPart.style.width = '50%';
+            accentPart.style.backgroundColor = theme.accent;
+
+            themeDiv.appendChild(bgPart);
+            themeDiv.appendChild(accentPart);
+
+            themeDiv.addEventListener('click', function() {
+                applyTheme(theme);
+            });
+            container.appendChild(themeDiv);
+        });
     }
-  });
+    
+    function getEmbedUrl(videoUrl) {
+        // ... (função getEmbedUrl da sugestão anterior, sem alterações)
+        if (!videoUrl) return '';
+        let embedUrl = videoUrl;
+        if (videoUrl.includes("youtube.com/watch?v=")) {
+            embedUrl = videoUrl.replace("watch?v=", "embed/");
+        } else if (videoUrl.includes("youtu.be/")) {
+            embedUrl = videoUrl.replace("youtu.be/", "youtube.com/embed/");
+        }
+        else if (videoUrl.includes("vimeo.com/")) {
+            const videoIdMatch = videoUrl.match(/vimeo\.com\/(\d+)/);
+            if (videoIdMatch && videoIdMatch[1]) {
+                 embedUrl = `https://player.vimeo.com/video/${videoIdMatch[1]}`;
+            }
+        }
+        if (embedUrl && !embedUrl.startsWith('http:') && !embedUrl.startsWith('https://')) {
+           embedUrl = 'https:' + (embedUrl.startsWith('//') ? embedUrl : '//' + embedUrl);
+        }
+        try {
+            const url = new URL(embedUrl);
+            return url.toString();
+        } catch (e) {
+            return '';
+        }
+    }
+
+    // Modificada para aceitar uma cor de texto opcional
+    function updatePreview(themeTextColor = null) {
+        previewTitulo.innerText = inputTitulo.value || 'Título do Presente';
+        previewMensagem.innerText = inputMensagem.value || 'Sua mensagem carinhosa aparecerá aqui...';
+
+        const corFundoValue = inputCorFundoText.value || defaultCasalBg;
+        const corDestaqueValue = inputCorDestaqueText.value || defaultCasalAccent;
+
+        previewContainer.style.backgroundColor = corFundoValue;
+        previewContainer.style.borderColor = corDestaqueValue;
+        previewTitulo.style.color = corDestaqueValue;
+        if(previewQrCodePlaceholderTitle) previewQrCodePlaceholderTitle.style.color = corDestaqueValue;
+
+        // Aplica a cor do texto da mensagem se um tema específico a definir
+        // Caso contrário, usa a cor padrão do CSS (text-gray-700)
+        previewMensagem.style.color = themeTextColor ? themeTextColor : '#4B5563'; // Default to gray-600 if no theme text color
+
+        if (inputImagem.files && inputImagem.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImagem.src = e.target.result;
+                previewImagemContainer.style.display = 'flex';
+            }
+            reader.readAsDataURL(inputImagem.files[0]);
+        } else {
+             previewImagem.src = '#';
+             previewImagemContainer.style.display = 'none';
+        }
+
+        const videoUrl = inputVideoUrl.value;
+        if (videoUrl) {
+            const embedUrl = getEmbedUrl(videoUrl);
+            if (embedUrl) {
+                previewVideo.src = embedUrl;
+                previewVideoContainer.style.display = 'flex';
+            } else {
+                previewVideoContainer.style.display = 'none';
+                previewVideo.src = '';
+            }
+        } else {
+            previewVideoContainer.style.display = 'none';
+            previewVideo.src = '';
+        }
+
+        const musicaUrl = inputMusicaUrl.value;
+        if (musicaUrl) {
+            previewMusicaSource.src = musicaUrl;
+            try {
+              previewMusica.load();
+              previewMusicaContainer.style.display = 'flex';
+            } catch (e) {
+              previewMusicaContainer.style.display = 'none';
+            }
+        } else {
+            previewMusicaContainer.style.display = 'none';
+        }
+    }
+
+    // Event Listeners para os campos do formulário
+    inputTitulo.addEventListener('input', () => updatePreview()); // Chama sem arg para usar cor de texto padrão
+    inputMensagem.addEventListener('input', () => updatePreview());
+    inputImagem.addEventListener('change', () => updatePreview());
+    inputVideoUrl.addEventListener('input', () => updatePreview());
+    
+    inputCorFundoText.addEventListener('input', function(e){
+        if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(e.target.value)) {
+            corFundoPicker.value = e.target.value;
+        }
+        updatePreview(); // Chama sem arg para usar cor de texto padrão
+    });
+    corFundoPicker.addEventListener('input', function(e){
+        inputCorFundoText.value = e.target.value;
+        updatePreview(); // Chama sem arg para usar cor de texto padrão
+    });
+    
+    inputCorDestaqueText.addEventListener('input', function(e){
+        if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(e.target.value)) {
+            corDestaquePicker.value = e.target.value;
+        }
+        updatePreview(); // Chama sem arg para usar cor de texto padrão
+    });
+    corDestaquePicker.addEventListener('input', function(e){
+        inputCorDestaqueText.value = e.target.value;
+        updatePreview(); // Chama sem arg para usar cor de texto padrão
+    });
+    
+    inputMusicaUrl.addEventListener('input', () => updatePreview());
+
+    // Exibe as sugestões de temas e configura a pré-visualização inicial
+    displayThemeSuggestions();
+    updatePreview(); 
+});
 </script>
 {% endblock %}

@@ -31,7 +31,7 @@
 
 {% block content %}
 <h1 class="text-2xl font-bold text-[var(--casal-accent-dynamic)] text-center mb-4">{{ presente.titulo }}</h1>
-<p class="text-center mb-4 text-gray-700">{{ presente.mensagem }}</p> {# Ajustar cor do texto se o fundo for muito escuro #}
+<p class="text-center mb-4 text-gray-700 font-semibold">{{ presente.mensagem }}</p> {# Ajustar cor do texto se o fundo for muito escuro #}
 
 {% if presente.imagem %}
   <div class="flex justify-center mb-4">
@@ -54,10 +54,10 @@
   </div>
 {% endif %}
 
-<div class="text-center mt-6">
+<!-- <div class="text-center mt-6">
   <h3 class="font-semibold text-lg mb-2 text-[var(--casal-accent-dynamic)]">QR Code:</h3>
   <img src="{{ presente.qr_code.url }}" class="mx-auto shadow-md">
-</div>
+</div> -->
 
 {# Exemplo de botão usando a cor de destaque dinâmica #}
 <div class="text-center mt-8">

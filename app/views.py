@@ -22,18 +22,28 @@ def criar_presente(request):
         imagem = request.FILES.get('imagem')
         video_url = request.POST.get('video_url')
         
-        # Cria o presente associando o usuário logado como autor
+        # Novos campos de personalização
+        cor_fundo = request.POST.get('cor_fundo')
+        cor_destaque = request.POST.get('cor_destaque')
+        musica_url = request.POST.get('musica_url')
+
+        # Validação simples (idealmente feita por um Form)
+        if cor_fundo and not cor_fundo.startswith('#'): cor_fundo = None
+        if cor_destaque and not cor_destaque.startswith('#'): cor_destaque = None
+
         p = Presente(
-            autor=request.user,  # Associando o usuário logado
+            autor=request.user,
             titulo=titulo,
             mensagem=mensagem,
             imagem=imagem,
-            video_url=video_url
+            video_url=video_url,
+            cor_fundo=cor_fundo if cor_fundo else None, # Salva None se estiver vazio
+            cor_destaque=cor_destaque if cor_destaque else None,
+            musica_url=musica_url if musica_url else None
         )
         p.save()
-        # Usar reverse para maior flexibilidade nas URLs
         return redirect(reverse('ver_presente', kwargs={'id': p.id}))
-    return render(request, 'criar.html') 
+    return render(request, 'criar.html')
 
 def ver_presente(request, id):
     presente = get_object_or_404(Presente, pk=id)

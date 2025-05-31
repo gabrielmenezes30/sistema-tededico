@@ -1,8 +1,8 @@
 # app/models.py
 from django.db import models
-from django.contrib.auth.models import User # Importar o modelo User
-from django.urls import reverse # Para gerar URLs de forma mais dinâmica
-from django.conf import settings # Para buscar configurações do projeto
+from django.contrib.auth.models import User
+from django.urls import reverse
+from django.conf import settings
 import qrcode
 from io import BytesIO
 from django.core.files import File
@@ -16,24 +16,45 @@ class Presente(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     qr_code = models.ImageField(upload_to='qrcodes/', blank=True, null=True, verbose_name="QR Code")
 
+    # Novos campos para personalização da aparência
+    cor_fundo = models.CharField(
+        max_length=7,  # Para código hexadecimal ex: #RRGGBB
+        blank=True,
+        null=True,
+        verbose_name="Cor de Fundo",
+        help_text="Ex: #FFFFFF para branco. Deixe em branco para usar o padrão."
+    )
+    cor_destaque = models.CharField(
+        max_length=7,  # Para código hexadecimal ex: #RRGGBB
+        blank=True,
+        null=True,
+        verbose_name="Cor de Destaque",
+        help_text="Ex: #FF69B4 para rosa. Deixe em branco para usar o padrão."
+    )
+    musica_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="URL da Música de Fundo",
+        help_text="Link direto para um arquivo de áudio (ex: .mp3) ou serviço de streaming compatível."
+    )
+
     def __str__(self):
         return self.titulo
 
     def get_absolute_url(self):
-        """Retorna a URL para visualizar este presente."""
         return reverse('ver_presente', kwargs={'id': self.id})
 
     def save(self, *args, **kwargs):
-        # Salva o objeto primeiro para garantir que temos um ID, especialmente para novos objetos.
-        # Se for uma atualização e o qr_code já existe, não precisamos fazer nada aqui inicialmente.
         is_new = self.pk is None
-        super().save(*args, **kwargs) # Primeira chamada para obter o ID se for novo
+        # Limpar valores de cor se não forem hex válidos (simplificado, pode precisar de validação mais robusta)
+        if self.cor_fundo and not self.cor_fundo.startswith('#'):
+            self.cor_fundo = None
+        if self.cor_destaque and not self.cor_destaque.startswith('#'):
+            self.cor_destaque = None
 
-        # Gerar QR code se for um novo presente ou se o campo qr_code estiver vazio.
+        super().save(*args, **kwargs)
+
         if is_new or not self.qr_code:
-            # Construir a URL completa para o QR Code
-            # Em produção, configure SITE_URL_BASE no settings.py (ex: 'https://seusite.com')
-            # Para desenvolvimento, pode ser 'http://127.0.0.1:8000'
             base_url = getattr(settings, 'SITE_URL_BASE', f"http://127.0.0.1:{getattr(settings, 'DEV_SERVER_PORT', '8000')}")
             presente_url_path = self.get_absolute_url()
             full_url = f"{base_url}{presente_url_path}"
@@ -43,34 +64,24 @@ class Presente(models.Model):
             qr_img.save(buffer, format='PNG')
             file_name = f'qrcode_{self.id}.png'
             
-            # Usamos save=False na atribuição do campo para evitar loop de save,
-            # e então chamamos super().save() novamente apenas para atualizar este campo.
             self.qr_code.save(file_name, File(buffer), save=False)
             
-            # Precisamos chamar super().save() novamente para salvar o qr_code.
-            # Para evitar recursão e salvar apenas os campos necessários:
-            # Coletamos os campos que foram originalmente passados para update_fields
-            update_fields = kwargs.get('update_fields')
-            if update_fields is not None:
-                # Se update_fields foi especificado, adicionamos 'qr_code' a ele
-                # Convertendo para lista para poder adicionar, caso seja uma tupla.
-                update_fields = list(update_fields) + ['qr_code']
-                # Removendo duplicatas caso 'qr_code' já estivesse lá.
-                update_fields = list(set(update_fields))
-            else:
-                # Se update_fields não foi especificado, o Django salvará todos os campos.
-                # Nesse caso, como já fizemos um super().save() antes,
-                # e estamos apenas atualizando o qr_code, podemos ser explícitos.
-                # No entanto, se outros campos foram modificados antes desta lógica de QR Code
-                # e não queremos perder essas mudanças, é mais seguro não especificar update_fields
-                # ou ter certeza que todos os campos modificados estão incluídos.
-                # Por simplicidade aqui, se 'update_fields' não foi usado, deixamos o Django
-                # salvar tudo novamente. Ou, para ser mais preciso em uma segunda chamada:
-                if not is_new: # Se não for novo, só atualizamos o qr_code.
-                     kwargs['update_fields'] = ['qr_code']
+            # Coleta os campos que foram originalmente passados para update_fields
+            update_fields_param = kwargs.get('update_fields')
+            final_update_fields = None
 
+            if not is_new: # Se não for novo, só atualizamos o qr_code e os campos de personalização se necessário
+                final_update_fields = ['qr_code']
+                # Se update_fields foi especificado, preservamos e adicionamos qr_code
+                if update_fields_param is not None:
+                    final_update_fields = list(set(list(update_fields_param) + ['qr_code']))
+            
+            # Chamada de save para o qr_code (e outros campos se for um objeto novo)
+            if final_update_fields:
+                 super().save(update_fields=final_update_fields)
+            else: # Se for novo, salva tudo
+                 super().save()
 
-            super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Presente"

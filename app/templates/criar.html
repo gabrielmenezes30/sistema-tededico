@@ -2,13 +2,56 @@
 {% block title %}Criar Presente{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold text-[var(--casal-accent)] text-center mb-4">Criar Presente</h1>
-<a href="/logout/" class="block text-right text-sm text-[var(--casal-accent)] underline mb-4">Logout</a>
 <form method="post" enctype="multipart/form-data" class="space-y-4">
   {% csrf_token %}
   <input type="text" name="titulo" placeholder="Título" class="w-full border p-2 rounded" required>
   <textarea name="mensagem" placeholder="Mensagem" class="w-full border p-2 rounded" rows="4" required></textarea>
   <input type="file" name="imagem" class="w-full border p-2 rounded">
   <input type="text" name="video_url" placeholder="URL do vídeo (opcional)" class="w-full border p-2 rounded">
-  <button type="submit" class="bg-[var(--casal-accent)] text-white px-4 py-2 rounded w-full">Criar</button>
+
+  <hr class="my-6">
+  <h2 class="text-xl font-semibold text-[var(--casal-accent)] mb-2">Personalizar Aparência (Opcional)</h2>
+  
+  <div>
+    <label for="cor_fundo" class="block text-sm font-medium text-gray-700">Cor de Fundo:</label>
+    <div class="flex items-center space-x-2">
+      <input type="color" id="cor_fundo_picker" value="#fff0f5" class="h-10 w-10 border-gray-300 rounded-md">
+      <input type="text" name="cor_fundo" id="cor_fundo" placeholder="Ex: #FFF0F5 (Padrão)" class="w-full border p-2 rounded" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
+    </div>
+    <p class="text-xs text-gray-500 mt-1">Escolha uma cor ou digite o código hexadecimal (ex: #FFB6C1).</p>
+  </div>
+
+  <div>
+    <label for="cor_destaque" class="block text-sm font-medium text-gray-700">Cor do Texto:</label>
+    <div class="flex items-center space-x-2">
+      <input type="color" id="cor_destaque_picker" value="#ff69b4" class="h-10 w-10 border-gray-300 rounded-md">
+      <input type="text" name="cor_destaque" id="cor_destaque" placeholder="Ex: #FF69B4 (Padrão)" class="w-full border p-2 rounded" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
+    </div>
+    <p class="text-xs text-gray-500 mt-1">Escolha uma cor ou digite o código hexadecimal (ex: #FF1493).</p>
+  </div>
+  
+  <input type="url" name="musica_url" placeholder="URL da Música de Fundo (opcional)" class="w-full border p-2 rounded">
+
+  <button type="submit" class="bg-[var(--casal-accent)] text-white px-4 py-2 rounded w-full mt-6 hover:opacity-90">Criar</button>
 </form>
+
+<script>
+  // Script simples para sincronizar o color picker com o input text
+  document.getElementById('cor_fundo_picker').addEventListener('input', function(e) {
+    document.getElementById('cor_fundo').value = e.target.value;
+  });
+  document.getElementById('cor_fundo').addEventListener('input', function(e) {
+    if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(e.target.value)) {
+        document.getElementById('cor_fundo_picker').value = e.target.value;
+    }
+  });
+  document.getElementById('cor_destaque_picker').addEventListener('input', function(e) {
+    document.getElementById('cor_destaque').value = e.target.value;
+  });
+  document.getElementById('cor_destaque').addEventListener('input', function(e) {
+    if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(e.target.value)) {
+        document.getElementById('cor_destaque_picker').value = e.target.value;
+    }
+  });
+</script>
 {% endblock %}

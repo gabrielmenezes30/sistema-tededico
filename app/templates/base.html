@@ -7,8 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --casal-bg: #fff0f5; /* LavenderBlush */
-      --casal-accent: #ff69b4; /* HotPink */
+      --casal-bg: #fff0f5; /* LavenderBlush - Padrão */
+      --casal-accent: #ff69b4; /* HotPink - Padrão */
     }
     /* Para o line-clamp (se não usar plugin do Tailwind) */
     .line-clamp-3 {
@@ -18,10 +18,11 @@
       -webkit-line-clamp: 3;
     }
   </style>
+  {% block head_extra %}{% endblock %} {# Novo bloco para estilos extras #}
 </head>
-<body class="bg-[var(--casal-bg)] text-gray-800 min-h-screen flex flex-col items-center justify-start pt-8 pb-8 px-4">
+<body class="bg-[var(--casal-bg)] text-gray-800 min-h-screen flex flex-col items-center justify-start pt-8 pb-8 px-4 {% block body_class %}{% endblock %}"> {# Classe de corpo e bg padrão #}
 
-  {% if user.is_authenticated %}
+  {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' %} {# Não mostrar nav em ver.html #}
   <nav class="w-full max-w-3xl mb-6 flex justify-end space-x-4">
       <a href="{% url 'dashboard' %}" class="text-[var(--casal-accent)] hover:underline font-medium">Meus Presentes</a>
       <a href="{% url 'criar_presente' %}" class="text-[var(--casal-accent)] hover:underline font-medium">Criar Novo</a>
@@ -29,7 +30,7 @@
   </nav>
   {% endif %}
 
-  <main class="w-full {% if user.is_authenticated %}max-w-3xl{% else %}max-w-md{% endif %} bg-white shadow-2xl rounded-2xl p-6 md:p-8 border-2 border-[var(--casal-accent)]">
+  <main class="w-full {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' %}max-w-3xl{% elif request.resolver_match.url_name == 'ver_presente' %}max-w-2xl{% else %}max-w-md{% endif %} bg-white shadow-2xl rounded-2xl p-6 md:p-8 border-2 border-[var(--casal-accent-dynamic, var(--casal-accent))]"> {# Usar cor dinâmica se disponível #}
     {% block content %}{% endblock %}
   </main>
 

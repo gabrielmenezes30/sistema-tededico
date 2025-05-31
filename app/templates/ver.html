@@ -1,20 +1,68 @@
 {% extends 'base.html' %}
+
+{% block head_extra %}
+{# Este bloco pode ser definido em base.html para injetar estilos no head #}
+<style>
+  :root {
+    /* Padrões definidos em base.html são sobrescritos aqui se houver personalização */
+    {% if presente.cor_fundo %}
+      --casal-bg-dynamic: {{ presente.cor_fundo }};
+    {% else %}
+      --casal-bg-dynamic: var(--casal-bg); /* Usa o padrão de base.html */
+    {% endif %}
+
+    {% if presente.cor_destaque %}
+      --casal-accent-dynamic: {{ presente.cor_destaque }};
+    {% else %}
+      --casal-accent-dynamic: var(--casal-accent); /* Usa o padrão de base.html */
+    {% endif %}
+  }
+
+  /* Aplicar a cor de fundo ao body desta página específica */
+  body.page-ver-presente {
+    background-color: var(--casal-bg-dynamic) !important; /* !important para garantir que sobrescreva o Tailwind */
+  }
+</style>
+{% endblock %}
+
+{% block body_class %}page-ver-presente{% endblock %} {# Adicionar uma classe ao body em base.html #}
+
 {% block title %}{{ presente.titulo }}{% endblock %}
+
 {% block content %}
-<h1 class="text-2xl font-bold text-[var(--casal-accent)] text-center mb-4">{{ presente.titulo }}</h1>
-<p class="text-center mb-4">{{ presente.mensagem }}</p>
+<h1 class="text-2xl font-bold text-[var(--casal-accent-dynamic)] text-center mb-4">{{ presente.titulo }}</h1>
+<p class="text-center mb-4 text-gray-700">{{ presente.mensagem }}</p> {# Ajustar cor do texto se o fundo for muito escuro #}
+
 {% if presente.imagem %}
   <div class="flex justify-center mb-4">
-    <img src="{{ presente.imagem.url }}" class="max-w-full h-auto rounded-xl">
+    <img src="{{ presente.imagem.url }}" class="max-w-full h-auto rounded-xl shadow-lg">
   </div>
 {% endif %}
+
 {% if presente.video_url %}
   <div class="flex justify-center mb-4">
-    <iframe class="rounded-xl" width="100%" height="315" src="{{ presente.video_url|safe }}" frameborder="0" allowfullscreen></iframe>
+    <iframe class="rounded-xl shadow-lg" width="100%" height="315" src="{{ presente.video_url|safe }}" frameborder="0" allowfullscreen></iframe>
   </div>
 {% endif %}
-<div class="text-center">
-  <h3 class="font-semibold text-lg mb-2">QR Code:</h3>
-  <img src="{{ presente.qr_code.url }}" class="mx-auto">
+
+{% if presente.musica_url %}
+  <div class="flex justify-center my-6">
+    <audio controls class="w-full max-w-md rounded-lg shadow-md">
+      <source src="{{ presente.musica_url }}" type="audio/mpeg"> {# Ajustar o type conforme necessário #}
+      Seu navegador não suporta o elemento de áudio.
+    </audio>
+  </div>
+{% endif %}
+
+<div class="text-center mt-6">
+  <h3 class="font-semibold text-lg mb-2 text-[var(--casal-accent-dynamic)]">QR Code:</h3>
+  <img src="{{ presente.qr_code.url }}" class="mx-auto shadow-md">
+</div>
+
+{# Exemplo de botão usando a cor de destaque dinâmica #}
+<div class="text-center mt-8">
+    <a href="{% url 'dashboard' %}" style="background-color: var(--casal-accent-dynamic); color: white;" class="px-6 py-3 rounded-lg text-white font-semibold shadow-md hover:opacity-90 transition-opacity">
+      Voltar ao Dashboard
+    </a>
 </div>
 {% endblock %}

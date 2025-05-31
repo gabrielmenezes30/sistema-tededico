@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Dashboard de Presentes{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-3xl font-bold text-[var(--casal-accent)]">Meus Presentes</h1>
+  <a href="{% url 'criar_presente' %}" class="bg-[var(--casal-accent)] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
+    &#43; Criar Novo Presente
+  </a>
+</div>
+
+{% if user.is_authenticated and user.presentes.count > 0 %}
+  <p class="mb-6 text-gray-700">Você criou um total de <span class="font-semibold">{{ total_presentes }}</span> presente(s).</p>
+
+  <div class="space-y-6">
+    {% for presente in page_obj.object_list %}
+    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 ease-in-out">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:space-x-4">
+        {% if presente.imagem %}
+        <img src="{{ presente.imagem.url }}" alt="Imagem de {{ presente.titulo }}" class="w-full sm:w-32 h-32 object-cover rounded-lg mb-3 sm:mb-0">
+        {% else %}
+        <div class="w-full sm:w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm mb-3 sm:mb-0">
+          Sem imagem
+        </div>
+        {% endif %}
+        
+        <div class="flex-grow">
+          <h2 class="text-2xl font-semibold text-[var(--casal-accent)] mb-1">{{ presente.titulo }}</h2>
+          <p class="text-xs text-gray-500 mb-2">Criado em: {{ presente.criado_em|date:"d/m/Y \à\s H:i" }}</p>
+          <p class="text-gray-700 text-sm mb-3 leading-relaxed line-clamp-3">{{ presente.mensagem }}</p>
+          
+          <div class="flex flex-wrap gap-2 mt-3">
+            <a href="{{ presente.get_absolute_url }}" class="text-sm bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition-colors">
+              Ver Detalhes
+            </a>
+            <a href="{{ presente.qr_code.url }}" target="_blank" class="text-sm bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors" title="Ver QR Code">
+              Ver QR Code
+            </a>
+            </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <div class="mt-10 flex justify-center">
+      <nav aria-label="Paginação dos presentes">
+        <ul class="inline-flex items-center -space-x-px">
+          {% if page_obj.has_previous %}
+            <li>
+              <a href="?page={{ page_obj.previous_page_number }}" class="py-2 px-3 ml-0 leading-tight text-gray-600 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 transition-colors">Anterior</a>
+            </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li>
+                <a href="?page={{ num }}" class="py-2 px-3 leading-tight text-[var(--casal-accent)] bg-pink-50 border border-[var(--casal-accent)] hover:bg-pink-100 hover:text-[var(--casal-accent)] transition-colors" aria-current="page">{{ num }}</a>
+              </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} {# Mostrar algumas páginas ao redor da atual #}
+              <li>
+                <a href="?page={{ num }}" class="py-2 px-3 leading-tight text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 transition-colors">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li>
+              <a href="?page={{ page_obj.next_page_number }}" class="py-2 px-3 leading-tight text-gray-600 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 transition-colors">Próxima</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  {% endif %}
+
+{% else %}
+  <div class="text-center py-12">
+    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 12.5M9.75 3.104c-.251.037-.502.068-.75.098m.75-.098c.624.03A23.953 23.953 0 0121 12c0 1.806-.26 3.544-.728 5.195M9.75 3.104c2.572 0 4.875.670 6.75 1.831m0 0c.142.076.282.155.42.237M12 12.75H9.75v5.714a2.25 2.25 0 00.659 1.591L14.25 22M12 12.75h4.875c2.365 0 4.25-2.02 3.797-4.355A4.5 4.5 0 0015.75 3.104M12 12.75L7.5 22m13.5-9.25c0-1.996-1.23-3.738-2.999-4.355" />
+    </svg>
+    <h3 class="mt-2 text-xl font-medium text-gray-800">Nenhum presente criado ainda</h3>
+    <p class="mt-1 text-sm text-gray-500">Que tal criar seu primeiro presente agora?</p>
+    <div class="mt-6">
+      <a href="{% url 'criar_presente' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[var(--casal-accent)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--casal-accent)] transition-opacity">
+        &#43; Criar Presente
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+{% if user.is_authenticated %}
+<div class="mt-10 text-center">
+  <a href="{% url 'logout' %}" class="text-sm text-gray-600 hover:text-[var(--casal-accent)] underline">Logout</a>
+</div>
+{% endif %}
+{% endblock %}

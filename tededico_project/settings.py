@@ -112,6 +112,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+SITE_URL_BASE = 'http://127.0.0.1:8000' # Mude para seu domínio em produção
+# DEV_SERVER_PORT = '8000' # Opcional, se você usa outra porta em dev
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 

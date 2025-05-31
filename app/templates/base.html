@@ -1,4 +1,3 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -8,14 +7,34 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --casal-bg: #fff0f5;
-      --casal-accent: #ff69b4;
+      --casal-bg: #fff0f5; /* LavenderBlush */
+      --casal-accent: #ff69b4; /* HotPink */
+    }
+    /* Para o line-clamp (se não usar plugin do Tailwind) */
+    .line-clamp-3 {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
     }
   </style>
 </head>
-<body class="bg-[var(--casal-bg)] text-gray-800 min-h-screen flex flex-col items-center justify-center px-4">
-  <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-6 border border-[var(--casal-accent)]">
+<body class="bg-[var(--casal-bg)] text-gray-800 min-h-screen flex flex-col items-center justify-start pt-8 pb-8 px-4">
+
+  {% if user.is_authenticated %}
+  <nav class="w-full max-w-3xl mb-6 flex justify-end space-x-4">
+      <a href="{% url 'dashboard' %}" class="text-[var(--casal-accent)] hover:underline font-medium">Meus Presentes</a>
+      <a href="{% url 'criar_presente' %}" class="text-[var(--casal-accent)] hover:underline font-medium">Criar Novo</a>
+      <a href="{% url 'logout' %}" class="text-gray-600 hover:text-[var(--casal-accent)] hover:underline">Logout</a>
+  </nav>
+  {% endif %}
+
+  <main class="w-full {% if user.is_authenticated %}max-w-3xl{% else %}max-w-md{% endif %} bg-white shadow-2xl rounded-2xl p-6 md:p-8 border-2 border-[var(--casal-accent)]">
     {% block content %}{% endblock %}
-  </div>
+  </main>
+
+  <footer class="mt-8 text-center text-sm text-gray-600">
+    <p>&copy; {% now "Y" %} Te Dedico. Feito com ❤️.</p>
+  </footer>
 </body>
 </html>

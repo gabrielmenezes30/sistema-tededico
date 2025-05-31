@@ -7,6 +7,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
+from django.urls import reverse
 
 class PresenteViewSet(viewsets.ModelViewSet):
     queryset = Presente.objects.all()
@@ -19,10 +21,19 @@ def criar_presente(request):
         mensagem = request.POST['mensagem']
         imagem = request.FILES.get('imagem')
         video_url = request.POST.get('video_url')
-        p = Presente(titulo=titulo, mensagem=mensagem, imagem=imagem, video_url=video_url)
+        
+        # Cria o presente associando o usuário logado como autor
+        p = Presente(
+            autor=request.user,  # Associando o usuário logado
+            titulo=titulo,
+            mensagem=mensagem,
+            imagem=imagem,
+            video_url=video_url
+        )
         p.save()
-        return HttpResponseRedirect(f'/presente/{p.id}/')
-    return render(request, 'criar.html')
+        # Usar reverse para maior flexibilidade nas URLs
+        return redirect(reverse('ver_presente', kwargs={'id': p.id}))
+    return render(request, 'criar.html') 
 
 def ver_presente(request, id):
     presente = get_object_or_404(Presente, pk=id)
@@ -54,3 +65,19 @@ def register_view(request):
         login(request, user)
         return redirect('/')
     return render(request, 'register.html')
+
+@login_required
+def dashboard_view(request):
+    # Buscar apenas os presentes criados pelo usuário logado, ordenados pelos mais recentes
+    presentes_list = Presente.objects.filter(autor=request.user).order_by('-criado_em')
+
+    # Paginação: mostrar 5 presentes por página (ajuste conforme necessário)
+    paginator = Paginator(presentes_list, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'total_presentes': presentes_list.count()
+    }
+    return render(request, 'dashboard/dashboard.html', context) # Novo template

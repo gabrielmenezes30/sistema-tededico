@@ -1,0 +1,21 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Presente{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --casal-bg: #fff0f5;
+      --casal-accent: #ff69b4;
+    }
+  </style>
+</head>
+<body class="bg-[var(--casal-bg)] text-gray-800 min-h-screen flex flex-col items-center justify-center px-4">
+  <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-6 border border-[var(--casal-accent)]">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

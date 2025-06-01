@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Aguardando Aprovação{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="text-2xl font-bold text-[var(--casal-accent)] mb-4">Seu Presente Está Quase Pronto!</h1>
+    {% if presente_id %}
+    <p class="mb-4">Seu presente (ID: {{ presente_id }}) foi criado e está aguardando aprovação e pagamento.</p>
+    {% else %}
+    <p class="mb-4">Seu presente está aguardando aprovação e pagamento.</p>
+    {% endif %}
+    <p class="mb-6">Para finalizar e liberar seu presente, por favor, realize o pagamento de R$ 5,00 entrando em contato conosco via WhatsApp.</p>
+    <a href="{{ link_whatsapp }}" target="_blank" class="inline-block bg-green-500 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-green-600 transition-colors">
+        <i class="fab fa-whatsapp mr-2"></i> Finalizar Pagamento via WhatsApp
+    </a>
+    <p class="mt-8">
+        <a href="{% url 'dashboard' %}" class="text-[var(--casal-accent)] hover:underline">Voltar ao Dashboard</a>
+    </p>
+</div>
+{% endblock %}

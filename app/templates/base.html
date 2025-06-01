@@ -5,37 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Presente{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  {# Opcional: Adicionar FontAwesome para ícones #}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <style>
     :root {
       --casal-bg: #fff0f5; /* LavenderBlush - Padrão */
       --casal-accent: #ff69b4; /* HotPink - Padrão */
     }
-    /* Para o line-clamp (se não usar plugin do Tailwind) */
     .line-clamp-3 {
       overflow: hidden;
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 3;
     }
+    /* Ajuste para o scroll da sidebar se o conteúdo for muito grande */
+    #sidebar nav {
+      max-height: calc(100vh - 8rem); /* Ajuste conforme a altura do header da sidebar e padding */
+      overflow-y: auto;
+    }
   </style>
-  {% block head_extra %}{% endblock %} {# Novo bloco para estilos extras #}
+  {% block head_extra %}{% endblock %}
 </head>
-<body class="bg-[var(--casal-bg)] text-gray-800 min-h-screen flex flex-col items-center justify-start pt-8 pb-8 px-4 {% block body_class %}{% endblock %}"> {# Classe de corpo e bg padrão #}
+<body class="bg-[var(--casal-bg)] text-gray-800 flex min-h-screen {% block body_class %}{% endblock %}">
 
-  {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' %} {# Não mostrar nav em ver.html #}
-  <nav class="w-full max-w-3xl mb-6 flex justify-end space-x-4">
-      <a href="{% url 'dashboard' %}" class="text-[var(--casal-accent)] hover:underline font-medium">Meus Presentes</a>
-      <a href="{% url 'criar_presente' %}" class="text-[var(--casal-accent)] hover:underline font-medium">Criar Novo</a>
-      <a href="{% url 'logout' %}" class="text-gray-600 hover:text-[var(--casal-accent)] hover:underline">Logout</a>
-  </nav>
+  {# Sidebar (condicionalmente visível, toggle em menores) #}
+  {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' and not request.resolver_match.url_name == 'login' and not request.resolver_match.url_name == 'register' %}
+  <aside id="sidebar" class="bg-white shadow-lg w-64 min-h-screen p-4 space-y-4 fixed md:relative z-20 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="text-center py-3 border-b border-gray-200">
+      <a href="{% url 'dashboard' %}" class="text-2xl font-bold text-[var(--casal-accent)]">Te Dedico</a>
+    </div>
+    <nav class="flex-grow flex flex-col space-y-2">
+      <a href="{% url 'dashboard' %}" class="text-gray-700 hover:bg-pink-50 hover:text-[var(--casal-accent)] px-3 py-2 rounded-md font-medium flex items-center">
+        <i class="fas fa-tachometer-alt mr-3 w-5 text-center"></i> Dashboard
+      </a>
+      <a href="{% url 'criar_presente' %}" class="text-gray-700 hover:bg-pink-50 hover:text-[var(--casal-accent)] px-3 py-2 rounded-md font-medium flex items-center">
+        <i class="fas fa-plus-circle mr-3 w-5 text-center"></i> Criar Presente
+      </a>
+      <a href="#" class="text-gray-700 hover:bg-pink-50 hover:text-[var(--casal-accent)] px-3 py-2 rounded-md font-medium flex items-center">
+        <i class="fas fa-user-cog mr-3 w-5 text-center"></i> Minha Conta
+      </a>
+      <hr class="my-3">
+      <a href="{% url 'logout' %}" class="text-gray-600 hover:bg-gray-100 hover:text-[var(--casal-accent)] px-3 py-2 rounded-md font-medium flex items-center mt-auto">
+        <i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i> Logout
+      </a>
+    </nav>
+  </aside>
   {% endif %}
 
-  <main class="w-full {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' %}max-w-3xl{% elif request.resolver_match.url_name == 'ver_presente' %}max-w-2xl{% else %}max-w-md{% endif %} bg-white shadow-2xl rounded-2xl p-6 md:p-8 border-2 border-[var(--casal-accent-dynamic, var(--casal-accent))]"> {# Usar cor dinâmica se disponível #}
-    {% block content %}{% endblock %}
-  </main>
+  {# Conteúdo Principal e Header com Hamburger #}
+  <div class="flex-1 flex flex-col min-w-0">
+    {# Header para o hamburger em telas menores e talvez título da página #}
+    {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' and not request.resolver_match.url_name == 'login' and not request.resolver_match.url_name == 'register' %}
+    <header class="bg-white shadow-md p-4 md:hidden sticky top-0 z-10"> 
+      <div class="flex justify-between items-center">
+        <a href="{% url 'dashboard' %}" class="text-xl font-bold text-[var(--casal-accent)]">Te Dedico</a>
+        <button id="hamburger-button" class="text-gray-700 focus:outline-none p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+        </button>
+      </div>
+    </header>
+    {% endif %}
 
-  <footer class="mt-8 text-center text-sm text-gray-600">
-    <p>&copy; {% now "Y" %} Te Dedico. Feito com ❤️.</p>
-  </footer>
+    {# Área de Conteúdo Principal #}
+    <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        {# O div abaixo é o container do "card" de conteúdo #}
+        <div class="w-full {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' and not request.resolver_match.url_name == 'login' and not request.resolver_match.url_name == 'register' %}
+                        bg-white shadow-xl rounded-xl p-6 md:p-8 border-2 border-[var(--casal-accent)]
+                       {% elif request.resolver_match.url_name == 'ver_presente' %}
+                        max-w-2xl mx-auto bg-white shadow-2xl rounded-2xl p-6 md:p-8 border-2 border-[var(--casal-accent-dynamic, var(--casal-accent))]
+                       {% else %}
+                        max-w-md mx-auto bg-white shadow-2xl rounded-2xl p-6 md:p-8 border-2 border-[var(--casal-accent-dynamic, var(--casal-accent))]
+                       {% endif %}">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="p-4 text-center text-sm text-gray-600 bg-gray-50 border-t
+                   {% if user.is_authenticated and not request.resolver_match.url_name == 'ver_presente' and not request.resolver_match.url_name == 'login' and not request.resolver_match.url_name == 'register' %}
+                     {# md:ml-64 -- Removido pois a sidebar é fixed em mobile e relative em desktop, o flex-1 do conteúdo já cuida disso #}
+                   {% endif %}">
+      <p>&copy; {% now "Y" %} Te Dedico. Feito com ❤️.</p>
+    </footer>
+  </div>
+
+  {# Overlay para quando a sidebar estiver aberta em mobile #}
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-10 hidden md:hidden"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const hamburgerButton = document.getElementById('hamburger-button');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    if (hamburgerButton && sidebar) {
+      hamburgerButton.addEventListener('click', function() {
+        sidebar.classList.toggle('-translate-x-full');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.toggle('hidden');
+        }
+      });
+    }
+
+    if (sidebarOverlay && sidebar) {
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+    }
+  });
+</script>
 </body>
 </html>

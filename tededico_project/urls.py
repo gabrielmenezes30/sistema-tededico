@@ -1,26 +1,22 @@
-"""
-URL configuration for tededico_project project.
+# tededico_project/urls.py
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include # Certifique-se de que 'include' está importado
 from django.conf import settings
 from django.conf.urls.static import static
+from django.conf.urls.i18n import i18n_patterns # Importe i18n_patterns se for usar tradução de URLs
+                                                # ou apenas inclua 'django.conf.urls.i18n'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('app.api_urls')),
-    path('', include('app.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/', include('app.api_urls')), #
+    path('', include('app.urls')), #
+    path('i18n/', include('django.conf.urls.i18n')), # <--- Adicione esta linha
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #
+
+# Se você planeja ter URLs traduzidas para o restante do site (não apenas o admin),
+# você pode configurar i18n_patterns assim:
+# urlpatterns += i18n_patterns(
+# path('seu_app/', include('app.urls')),
+# Adicione outras URLs que você quer que sejam traduzidas aqui
+# )

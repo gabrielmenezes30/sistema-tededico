@@ -6,7 +6,8 @@ from .views import (
     login_view,
     logout_view,
     register_view,
-    dashboard_view  # Importar a nova view
+    dashboard_view, # Importar a nova view
+    minha_conta_view,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', register_view, name='register'),
+    path('minha-conta/', minha_conta_view, name='minha_conta'),
 ]

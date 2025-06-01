@@ -117,3 +117,12 @@ def dashboard_view(request):
         'total_presentes': presentes_list.count()
     }
     return render(request, 'dashboard/dashboard.html', context) # Novo template
+
+@login_required
+def minha_conta_view(request):
+    username = request.user.username # Obtém o nome de usuário do usuário logado
+    context = {
+        'username': username
+    }
+    return render(request, 'minhaConta/minha_conta.html', context)
+

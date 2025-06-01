@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Minha Conta - Te Dedico{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 max-w-2xl">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Minha Conta</h1>
+
+    <div class="bg-white p-8 rounded-lg shadow-xl mb-8">
+        <p class="text-2xl text-center mb-4 text-gray-700">Olá, <span class="font-extrabold text-blue-600">{{ username }}</span>!</p>
+        <hr class="my-6 border-gray-200">
+
+        <h2 class="text-xl font-semibold mb-3 text-gray-800">Informações do Perfil</h2>
+        <ul class="list-disc list-inside text-gray-700 space-y-2">
+            <li><strong>Nome de Usuário:</strong> {{ request.user.username }}</li>
+            <li><strong>Email:</strong> {{ request.user.email }}</li>
+            <li><strong>Membro desde:</strong> {{ request.user.date_joined|date:"d/m/Y" }}</li>
+            <li><strong>Último Acesso:</strong> {{ request.user.last_login|date:"d/m/Y H:i" }}</li>
+            <li><strong>Presentes Criados:</strong> <span class="font-bold">{{ request.user.presentes.count }}</span></li>
+        </ul>
+
+        <hr class="my-6 border-gray-200">
+
+        <h2 class="text-xl font-semibold mb-3 text-gray-800">Gerenciamento da Conta</h2>
+        <div class="flex flex-col space-y-3">
+            <a href="{% url 'password_change' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-center">
+                Alterar Senha
+            </a>
+            <button onclick="alert('Funcionalidade em desenvolvimento!')" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-center">
+                Excluir Conta
+            </button>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a href="{% url 'dashboard' %}" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 ease-in-out">
+            Voltar para o Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

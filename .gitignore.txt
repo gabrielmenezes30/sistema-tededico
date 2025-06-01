@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Banco de dados SQLite local
+db.sqlite3
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+
+# Outros arquivos de sistema ou temporários
+.DS_Store
+Thumbs.db

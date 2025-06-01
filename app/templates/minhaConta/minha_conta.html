@@ -3,39 +3,48 @@
 {% block title %}Minha Conta - Te Dedico{% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 max-w-2xl">
+<div class="container mx-auto p-4 max-w-xl flex flex-col items-center justify-center min-h-screen">
     <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Minha Conta</h1>
 
-    <div class="bg-white p-8 rounded-lg shadow-xl mb-8">
-        <p class="text-2xl text-center mb-4 text-gray-700">Olá, <span class="font-extrabold text-blue-600">{{ username }}</span>!</p>
-        <hr class="my-6 border-gray-200">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full">
+        <p class="text-2xl text-center mb-6 text-gray-700">Olá, <span class="font-extrabold text-[var(--casal-accent)]">{{ username }}</span>!</p>
 
-        <h2 class="text-xl font-semibold mb-3 text-gray-800">Informações do Perfil</h2>
-        <ul class="list-disc list-inside text-gray-700 space-y-2">
-            <li><strong>Nome de Usuário:</strong> {{ request.user.username }}</li>
-            <li><strong>Email:</strong> {{ request.user.email }}</li>
-            <li><strong>Membro desde:</strong> {{ request.user.date_joined|date:"d/m/Y" }}</li>
-            <li><strong>Último Acesso:</strong> {{ request.user.last_login|date:"d/m/Y H:i" }}</li>
-            <li><strong>Presentes Criados:</strong> <span class="font-bold">{{ request.user.presentes.count }}</span></li>
-        </ul>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {# Card/Seção de Informações do Perfil #}
+            <div class="bg-pink-50 p-5 rounded-lg shadow-inner border border-pink-200">
+                <h2 class="text-xl font-semibold mb-3 text-gray-800 flex items-center">
+                    <i class="fas fa-info-circle mr-2 text-pink-500"></i> Seu Perfil
+                </h2>
+                <div class="space-y-2 text-gray-700 text-sm">
+                    <p><strong>Usuário:</strong> <span class="font-medium">{{ request.user.username }}</span></p>
+                    <p><strong>Email:</strong> <span class="font-medium">{{ request.user.email }}</span></p>
+                    <p><strong>Membro desde:</strong> <span class="font-medium">{{ request.user.date_joined|date:"d/m/Y" }}</span></p>
+                    <p><strong>Último acesso:</strong> <span class="font-medium">{{ request.user.last_login|date:"d/m/Y H:i" }}</span></p>
+                    <p><strong>Presentes criados:</strong> <span class="font-bold text-lg">{{ request.user.presentes.count }}</span></p>
+                </div>
+            </div>
 
-        <hr class="my-6 border-gray-200">
-
-        <h2 class="text-xl font-semibold mb-3 text-gray-800">Gerenciamento da Conta</h2>
-        <div class="flex flex-col space-y-3">
-            <a href="{% url 'password_change' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-center">
-                Alterar Senha
-            </a>
-            <button onclick="alert('Funcionalidade em desenvolvimento!')" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-center">
-                Excluir Conta
-            </button>
+            {# Card/Seção de Ações da Conta - Fundo Roxinho Claro #}
+            <div class="bg-purple-50 p-5 rounded-lg shadow-inner border border-purple-200">
+                <h2 class="text-xl font-semibold mb-3 text-gray-800 flex items-center">
+                    <i class="fas fa-cogs mr-2 text-purple-500"></i> Ações da Conta
+                </h2>
+                <div class="flex flex-col space-y-3">
+                    {# Botão Alterar Senha - Cor de destaque principal com hover sutil #}
+                    <a href="{% url 'password_change' %}" class="bg-[var(--casal-accent)] hover:brightness-110 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-center shadow-md">
+                        <i class="fas fa-key mr-2"></i> Alterar Senha
+                    </a>
+                    {# Botão Ver Meus Presentes - Roxinho claro com hover sutil #}
+                    <a href="{% url 'dashboard' %}" class="bg-purple-600 hover:brightness-110 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-center shadow-md">
+                        <i class="fas fa-gift mr-2"></i> Ver Meus Presentes
+                    </a>
+                    {# Botão Excluir Conta - Vermelho neutro com hover sutil #}
+                    <button onclick="alert('Esta funcionalidade de exclusão de conta requer confirmação e será implementada em breve!')" class="bg-red-500 hover:brightness-110 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-center shadow-md">
+                        <i class="fas fa-trash-alt mr-2"></i> Excluir Conta
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <div class="text-center">
-        <a href="{% url 'dashboard' %}" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 ease-in-out">
-            Voltar para o Dashboard
-        </a>
     </div>
 </div>
 {% endblock %}

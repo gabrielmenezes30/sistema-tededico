@@ -6,6 +6,7 @@
 <form method="post" class="space-y-4">
   {% csrf_token %}
   <input type="text" name="username" placeholder="Usuário" class="w-full border p-2 rounded" required>
+  <input type="email" name="email" placeholder="Email" class="w-full border p-2 rounded" required> {# Added email input #}
   <input type="password" name="password" placeholder="Senha" class="w-full border p-2 rounded" required>
   <button type="submit" class="bg-[var(--casal-accent)] text-white px-4 py-2 rounded w-full">Registrar</button>
 </form>

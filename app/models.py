@@ -6,6 +6,9 @@ from django.conf import settings
 import qrcode
 from io import BytesIO
 from django.core.files import File
+import uuid # For generating unique tokens
+from django.utils import timezone # For managing expiry
+
 
 class Presente(models.Model):
     autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="presentes", verbose_name="Autor") #

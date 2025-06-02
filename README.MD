@@ -7,11 +7,13 @@
 **Principais Funcionalidades e Casos de Uso:**
 
 * **Criação Personalizada de Presentes:** Usuários podem compor presentes digitais com título, mensagem, upload de imagens, incorporação de vídeos (via URL), adição de música de fundo (via URL) e seleção de cores para o fundo e elementos de destaque.
-* **Autenticação de Usuários:** Sistema completo de registro, login e logout para proteger o acesso e associar os presentes aos seus respectivos autores.
+* **Autenticação de Usuários:** Sistema completo de registro (agora incluindo **email**), login e logout para proteger o acesso e associar os presentes aos seus respectivos autores.
 * **Dashboard do Usuário:** Após o login, os usuários têm acesso a um painel pessoal onde podem visualizar todos os presentes que criaram, com informações resumidas e acesso rápido.
 * **Visualização Única de Presentes:** Cada presente possui uma URL única e um QR Code correspondente (gerado automaticamente) para fácil compartilhamento e visualização. A página de visualização aplica as personalizações de mídia e aparência definidas pelo autor.
+* **Status de Aprovação de Presente:** Presentes passam por um status de aprovação (`pendente`, `aprovado`, `rejeitado`). O QR Code é gerado e o presente é visível publicamente apenas após ser `aprovado`.
+* **Página "Minha Conta":** Usuários autenticados podem acessar uma página dedicada para gerenciar informações da conta, incluindo a opção de **alterar a senha**.
 * **API RESTful:** Uma API (Application Programming Interface) construída com Django REST Framework expõe endpoints para gerenciamento programático dos presentes.
-* **Interface Administrativa:** O Django Admin é customizado para permitir o gerenciamento facilitado dos dados da aplicação por administradores.
+* **Interface Administrativa:** O Django Admin é customizado para permitir o gerenciamento facilitado dos dados da aplicação por administradores, incluindo o status de aprovação dos presentes.
 
 O projeto utiliza uma arquitetura Model-View-Template (MVT), padrão do Django, e adota Tailwind CSS para a estilização do frontend, garantindo uma interface moderna e responsiva.
 
@@ -49,72 +51,44 @@ O projeto "Te Dedico" adere à arquitetura MVT (Model-View-Template) do Django:
 A organização dos diretórios e arquivos do projeto "Te Dedico" segue as convenções padrão do Django, facilitando a navegação e a manutenção do código. Abaixo está uma representação da estrutura principal:
 
 tededico_project/      # Diretório raiz do projeto Django
-
 ├── tededico_project/  # Aplicação de configuração do projeto (core)
-
-│   ├── __init__.py
-
+│   ├── init.py
 │   ├── asgi.py        # Ponto de entrada para servidores ASGI (Asynchronous Server Gateway Interface)
-
 │   ├── settings.py    # Arquivo de configurações globais do projeto Django
-
 │   ├── urls.py        # Configuração principal de URLs do projeto
-
 │   └── wsgi.py        # Ponto de entrada para servidores WSGI (Web Server Gateway Interface)
-
 ├── app/               # Aplicação Django principal do "Te Dedico"
-
-│   ├── __init__.py
-
+│   ├── init.py
 │   ├── admin.py       # Configurações para a interface administrativa do Django
-
 │   ├── api_urls.py    # Definições de URL específicas para a API REST
-
 │   ├── apps.py        # Configuração da aplicação "app"
-
 │   ├── migrations/    # Arquivos de migração do banco de dados gerados pelo Django
-
 │   │   ├── 0001_initial.py
-
 │   │   ├── 0002_alter_presente_options_presente_autor_and_more.py
-
 │   │   ├── 0003_presente_cor_destaque_presente_cor_fundo_and_more.py
-
-│   │   └── __init__.py
-
+│   │   ├── 0004_presente_status_aprovacao.py
+│   │   └── init.py
 │   ├── models.py      # Definição dos modelos de dados da aplicação
-
 │   ├── serializers.py # Serializers para converter modelos em formatos como JSON para a API
-
 │   ├── templates/     # Diretório contendo os arquivos de template HTML
-
+│   │   ├── aguardando_aprovaçao.html # Template para status de presente pendente de aprovação
 │   │   ├── base.html  # Template base com estrutura comum e sidebar
-
 │   │   ├── criar.html # Template para a página de criação de presentes
-
 │   │   ├── login.html # Template para a página de login
-
 │   │   ├── register.html# Template para a página de registro
-
 │   │   ├── ver.html   # Template para visualização de um presente específico
-
-│   │   └── dashboard/ # Subdiretório para templates relacionados ao dashboard
-
-│   │       └── dashboard.html # Template do painel do usuário
-
+│   │   ├── password_change_form.html # Template para alteração de senha
+│   │   ├── password_change_done.html # Template para confirmação de alteração de senha
+│   │   ├── dashboard/ # Subdiretório para templates relacionados ao dashboard
+│   │   │   └── dashboard.html # Template do painel do usuário
+│   │   └── minhaConta/ # Subdiretório para templates relacionados à conta do usuário
+│   │       └── minha_conta.html # Template do painel de minha conta
 │   ├── tests.py       # Arquivo para testes automatizados da aplicação
-
 │   ├── urls.py        # Definições de URL específicas para a aplicação "app"
-
 │   └── views.py       # Lógica de processamento de requisições e respostas (views)
-
 ├── media/             # Diretório onde os arquivos de mídia enviados pelos usuários (imagens, QR Codes)
-
 │                      # são armazenados (configurado em settings.py)
-
 └── manage.py          # Utilitário de linha de comando do Django para tarefas administrativas
-
-A estrutura de diretórios do projeto é organizada da seguinte forma:
 
 
 ## 5. Configuração do Projeto (`tededico_project/settings.py`)
@@ -135,7 +109,7 @@ O arquivo `settings.py` contém todas as configurações do projeto Django. As c
     * `LOGIN_REDIRECT_URL = '/'`: URL para redirecionamento após um login bem-sucedido.
     * `LOGOUT_REDIRECT_URL = '/login/'`: URL para redirecionamento após um logout bem-sucedido.
 * **Internacionalização (i18n) e Localização (l10n):**
-    * `LANGUAGE_CODE = 'en-us'`
+    * `LANGUAGE_CODE = 'pt-br'`
     * `TIME_ZONE = 'UTC'`
     * `USE_I18N = True`, `USE_TZ = True`
 * **Arquivos Estáticos e de Mídia:**
@@ -145,6 +119,7 @@ O arquivo `settings.py` contém todas as configurações do projeto Django. As c
     * `MEDIA_ROOT = BASE_DIR / 'media'`: Caminho absoluto no sistema de arquivos onde os arquivos de mídia são armazenados.
 * **Outras Configurações:**
     * `DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'`: Define o tipo de campo padrão para chaves primárias automáticas.
+    * **Jazzmin**: O projeto integra `django-jazzmin` para uma interface administrativa aprimorada, com configurações como título do site, cabeçalho e menu lateral.
 
 ## 6. Componentes Detalhados da Aplicação `app`
 
@@ -167,13 +142,14 @@ Define a estrutura de um "presente digital".
     * `cor_fundo`: `CharField(max_length=7, blank=True, null=True, verbose_name="Cor de Fundo", help_text="Ex: #FFFFFF...")` - Código hexadecimal opcional para a cor de fundo.
     * `cor_destaque`: `CharField(max_length=7, blank=True, null=True, verbose_name="Cor de Destaque", help_text="Ex: #FF69B4...")` - Código hexadecimal opcional para a cor de destaque.
     * `musica_url`: `URLField(blank=True, null=True, verbose_name="URL da Música de Fundo", help_text="Link direto...")` - URL opcional para uma trilha sonora.
+    * `status_aprovacao`: `CharField` com escolhas (`'pendente'`, `'aprovado'`, `'rejeitado'`), `default='pendente'`. Controla a visibilidade pública e a geração do QR Code.
 
 * **Métodos:**
     * `__str__(self)`: Retorna `self.titulo` para representação textual do objeto.
     * `get_absolute_url(self)`: Retorna a URL canônica para visualizar o objeto `Presente` específico, utilizando `reverse('ver_presente', kwargs={'id': self.id})`.
     * `save(self, *args, **kwargs)`: Sobrescrito para realizar duas ações principais antes de salvar:
         1.  **Validação de Cores:** Verifica se `cor_fundo` e `cor_destaque` iniciam com `#`. Caso contrário, define-os como `None` (validação básica).
-        2.  **Geração de QR Code:** Se o objeto é novo (`is_new`) ou não possui um `qr_code` associado, um QR Code é gerado a partir da URL absoluta do presente (obtida via `get_absolute_url()` e `settings.SITE_URL_BASE`). A imagem do QR Code é salva em um `BytesIO buffer` e, em seguida, no campo `qr_code` do modelo. O método lida com `update_fields` para otimizar o salvamento quando apenas o QR Code precisa ser atualizado.
+        2.  **Geração de QR Code:** Um QR Code é gerado **apenas se o `status_aprovacao` for `'aprovado'` e ainda não houver um `qr_code` associado**. O QR Code é gerado a partir da URL absoluta do presente e salvo no campo `qr_code`.
 
 * **Classe `Meta`:**
     * `verbose_name = "Presente"` e `verbose_name_plural = "Presentes"`: Nomes amigáveis para o modelo no Django Admin.
@@ -191,23 +167,28 @@ As views são responsáveis por processar requisições e retornar respostas.
 * **`criar_presente(request)`**:
     * Decorador: `@login_required` - Acesso restrito a usuários autenticados.
     * Método `GET`: Renderiza o template `criar.html` para exibição do formulário de criação.
-    * Método `POST`: Coleta os dados do formulário (`request.POST`, `request.FILES`). Valida (de forma simples) os campos de cor. Cria uma nova instância de `Presente`, associando o `request.user` ao campo `autor`. Salva o objeto e redireciona para `ver_presente` com o ID do novo presente.
+    * Método `POST`: Coleta os dados do formulário, cria uma nova instância de `Presente` com `status_aprovacao='pendente'`, associa o `request.user` ao `autor`. Após salvar, redireciona para uma página de "aguardando aprovação" (`aguardando_aprovaçao.html`) com um link do WhatsApp para contato e pagamento.
 * **`ver_presente(request, id)`**:
-    * Recupera uma instância de `Presente` pelo `id` fornecido na URL usando `get_object_or_404`.
-    * Renderiza o template `ver.html`, passando o objeto `presente` para o contexto.
+    * Recupera uma instância de `Presente` pelo `id` usando `get_object_or_404`.
+    * **Controle de Acesso:** Se o presente não estiver `aprovado` e o usuário não for o autor nem um superusuário (`is_staff`), redireciona para a página de "aguardando aprovação". Caso contrário, renderiza o template `ver.html`.
 * **`login_view(request)`**:
     * Método `GET`: Renderiza `login.html`.
-    * Método `POST`: Extrai `username` e `password`. Autentica o usuário com `authenticate()`. Se válido, realiza o login com `login(request, user)` e redireciona para `LOGIN_REDIRECT_URL` (`'/'`). Caso contrário, renderiza `login.html` com uma mensagem de erro.
+    * Método `POST`: Autentica o usuário. Se válido, faz o login e redireciona. Caso contrário, exibe erro.
 * **`logout_view(request)`**:
-    * Realiza o logout do usuário (`logout(request)`) e redireciona para `LOGOUT_REDIRECT_URL` (`'/login/'`).
+    * Realiza o logout do usuário e redireciona para a página de login.
 * **`register_view(request)`**:
     * Método `GET`: Renderiza `register.html`.
-    * Método `POST`: Extrai `username` e `password`. Verifica se o usuário já existe. Se não, cria o usuário com `User.objects.create_user()`, faz o login e redireciona para `'/'`. Caso contrário, renderiza `register.html` com uma mensagem de erro.
+    * Método `POST`: Extrai `username`, `email` e `password`. Realiza validação básica de formato de email e verifica se o usuário ou email já existem. Se tudo estiver ok, cria o usuário (incluindo o email), faz o login e redireciona.
 * **`dashboard_view(request)`**:
     * Decorador: `@login_required`.
-    * Busca os presentes (`Presente.objects.filter(autor=request.user).order_by('-criado_em')`) do usuário logado.
-    * Implementa paginação usando `django.core.paginator.Paginator` (5 itens por página).
-    * Renderiza `dashboard/dashboard.html` com a página atual de presentes (`page_obj`) e o total de presentes.
+    * Busca os presentes do usuário logado, ordena por data de criação.
+    * Implementa paginação (5 itens por página).
+    * Renderiza `dashboard/dashboard.html` com a página atual de presentes e o total de presentes.
+* **`minha_conta_view(request)`**:
+    * Decorador: `@login_required`.
+    * Renderiza o template `minhaConta/minha_conta.html`, exibindo informações do usuário logado (username, email, data de registro, último login, número de presentes criados). Oferece links para alterar senha e ver o dashboard.
+* **Django's `PasswordChangeView` and `PasswordChangeDoneView`**:
+    * Integradas diretamente nas URLs do projeto para gerenciar a alteração de senha e a página de sucesso correspondente.
 
 ### 6.3. URLs (`app/urls.py` e `app/api_urls.py`)
 
@@ -216,6 +197,7 @@ As views são responsáveis por processar requisições e retornar respostas.
     * `api/`: Delega para `app.api_urls` para todas as rotas da API.
     * `''`: Delega para `app.urls` para as rotas da aplicação principal.
     * Adiciona o padrão `static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)` para servir arquivos de mídia em desenvolvimento.
+    * Inclui as URLs para **alteração de senha**: `change-password/` e `change-password/done/`.
 * **`app/urls.py`**:
     * Define as rotas para as views baseadas em função:
         * `''` (raiz) -> `dashboard_view` (nome: `dashboard`)
@@ -224,6 +206,7 @@ As views são responsáveis por processar requisições e retornar respostas.
         * `login/` -> `login_view` (nome: `login`)
         * `logout/` -> `logout_view` (nome: `logout`)
         * `register/` -> `register_view` (nome: `register`)
+        * `minha-conta/` -> `minha_conta_view` (nome: `minha_conta`)
 * **`app/api_urls.py`**:
     * Utiliza `DefaultRouter` do DRF para registrar automaticamente as rotas para o `PresenteViewSet` sob o prefixo `presentes`.
     * Isso gera URLs como `/api/presentes/` (para `GET` listar e `POST` criar) e `/api/presentes/<id>/` (para `GET` detalhe, `PUT`/`PATCH` atualizar, `DELETE` excluir).
@@ -235,72 +218,71 @@ Os templates definem a interface do usuário. Todos herdam de `base.html`.
 * **`base.html`**:
     * Estrutura principal da página, incluindo `<head>` (com CDN do Tailwind CSS e FontAwesome) e `<body>`.
     * Define variáveis CSS (`--casal-bg`, `--casal-accent`) para o tema.
-    * Implementa uma **sidebar de navegação lateral** para usuários autenticados, com links para Dashboard, Criar Novo e Logout. A sidebar é responsiva e controlada por JavaScript.
+    * Implementa uma **sidebar de navegação lateral** para usuários autenticados, com links para Dashboard, Criar Novo, Minha Conta e Logout. A sidebar é responsiva e controlada por JavaScript.
     * Contém um **header mobile** com o logo e um botão "hamburger" para exibir/ocultar a sidebar em telas menores.
     * Utiliza blocos de template Django (`{% block title %}`, `{% block head_extra %}`, `{% block body_class %}`, `{% block content %}`) para permitir que templates filhos substituam ou adicionem conteúdo.
     * Inclui um footer padrão.
 * **`dashboard/dashboard.html`**:
     * Exibe a lista de presentes criados pelo usuário logado.
-    * Apresenta cada presente em um card com imagem, título, data e um trecho da mensagem.
-    * Oferece links para "Ver Detalhes" e "Ver QR Code" de cada presente.
-    * Implementa navegação por paginação se o número de presentes exceder o limite por página.
+    * Apresenta cada presente em um card com imagem, título, data, trecho da mensagem e o **status de aprovação**.
+    * Oferece links para "Ver Detalhes" e "Ver QR Code" (apenas se o QR Code estiver disponível, ou seja, se o presente for `aprovado`) de cada presente.
+    * Implementa navegação por paginação.
     * Mostra uma mensagem de incentivo para criar um presente se a lista estiver vazia.
 * **`criar.html`**:
     * Contém o formulário para criação de novos presentes. Campos incluem: título, mensagem, upload de imagem, URL de vídeo, URL de música e seletores de cor de fundo/destaque.
     * Apresenta uma seção de "Sugestões de Temas" de cores que, ao serem clicadas, preenchem os campos de cor.
-    * Implementa uma **pré-visualização dinâmica** em uma coluna adjacente. Esta pré-visualização é atualizada em tempo real via JavaScript à medida que o usuário preenche os campos do formulário, refletindo título, mensagem, imagem, vídeo, música e as cores selecionadas.
+    * Implementa uma **pré-visualização dinâmica** em uma coluna adjacente, atualizada em tempo real via JavaScript.
 * **`ver.html`**:
     * Página de visualização de um presente individual.
     * Renderiza o título, mensagem, imagem, vídeo (incorporado) e áudio (com controles) do presente.
-    * Aplica dinamicamente as cores de fundo e destaque personalizadas, se definidas no modelo `Presente`, sobrescrevendo os padrões do `base.html` através de variáveis CSS injetadas no bloco `head_extra`.
+    * Aplica dinamicamente as cores personalizadas.
+    * Exibe o QR Code **apenas se o presente tiver o status 'aprovado'**. Se o presente estiver `pendente` e o usuário for o autor ou um administrador, uma mensagem informativa é exibida.
 * **`login.html`** e **`register.html`**:
     * Templates simples para os formulários de autenticação e registro, respectivamente.
+    * O `register.html` agora inclui um campo de **email**.
     * Exibem mensagens de erro, se aplicável.
+* **`aguardando_aprovaçao.html`**:
+    * Uma nova página que informa o usuário que seu presente foi criado e está aguardando aprovação e pagamento, fornecendo um link para contato via WhatsApp.
+* **`minhaConta/minha_conta.html`**:
+    * Uma nova página que exibe informações do perfil do usuário (username, email, data de registro, último login, número de presentes criados) e oferece botões para "Alterar Senha", "Ver Meus Presentes" e um placeholder para "Excluir Conta".
+* **`password_change_form.html`**:
+    * Template para o formulário de alteração de senha, estilizado com Tailwind CSS.
+* **`password_change_done.html`**:
+    * Template de confirmação após a senha ter sido alterada com sucesso.
 
 ### 6.5. Serializers (`app/serializers.py`)
 
 * **`PresenteSerializer(serializers.ModelSerializer)`**:
-    * Converte instâncias do modelo `Presente` para formatos de dados como JSON (para respostas da API) e vice-versa (para processar dados de requisições da API).
-    * `class Meta`:
-        * `model = Presente`: Especifica o modelo a ser serializado.
-        * `fields = '__all__'`: Indica que todos os campos do modelo `Presente` devem ser incluídos na representação serializada.
+    * Converte instâncias do modelo `Presente` para formatos de dados como JSON e vice-versa.
+    * `fields = '__all__'`: Inclui todos os campos do modelo `Presente` na representação serializada.
 
 ### 6.6. Admin (`app/admin.py`)
 
 A configuração do Django Admin para o modelo `Presente` é customizada para melhorar a usabilidade.
 
-* **`@admin.register(Presente)`**: Registra o modelo `Presente` com a classe de administração customizada `PresenteAdmin`.
+* `@admin.register(Presente)`: Registra o modelo `Presente` com a classe de administração customizada `PresenteAdmin`.
 * **`PresenteAdmin(admin.ModelAdmin)`**:
-    * `list_display`: Define as colunas exibidas na visualização em lista de presentes no admin (`titulo`, `autor`, `criado_em`, `imagem_preview`, `video_url`).
-    * `list_filter`: Adiciona filtros laterais para `autor` e `criado_em`.
+    * `list_display`: Define as colunas exibidas na visualização em lista de presentes no admin (`titulo`, `autor`, `criado_em`, `status_aprovacao`, `imagem_preview`, `video_url`).
+    * `list_filter`: Adiciona filtros laterais para `autor`, `criado_em` e `status_aprovacao`.
     * `search_fields`: Habilita a busca por `titulo`, `mensagem` e `autor__username`.
-    * `readonly_fields`: Torna os campos `qr_code_preview` e `criado_em` somente leitura nos formulários de edição/criação do admin.
-    * `fieldsets`: Organiza os campos do formulário em seções lógicas (Informações Principais, Mídia, QR Code).
-    * `imagem_preview(self, obj)`: Método customizado para exibir uma miniatura da imagem do presente na `list_display` e no formulário.
-    * `qr_code_preview(self, obj)`: Método customizado para exibir a imagem do QR Code no formulário.
+    * `readonly_fields`: Torna os campos `qr_code_preview` e `criado_em` somente leitura.
+    * `fieldsets`: Organiza os campos do formulário em seções lógicas (Informações Principais, Mídia, Personalização Visual, QR Code). O campo `status_aprovacao` foi adicionado à seção de informações principais.
+    * `imagem_preview(self, obj)`: Método customizado para exibir uma miniatura da imagem.
+    * `qr_code_preview(self, obj)`: Método customizado para exibir a imagem do QR Code. A mensagem exibida se o QR Code não estiver disponível foi ajustada.
 
-### 6.7. Lógica Frontend (JavaScript em `criar.html`)
+### 6.7. Lógica Frontend (JavaScript em `criar.html`, `base.html`, `password_change_form.html`)
 
-O template `criar.html` contém um script JavaScript significativo para a funcionalidade de pré-visualização dinâmica.
+O template `criar.html` contém um script JavaScript significativo para a funcionalidade de pré-visualização dinâmica. O `base.html` lida com a responsividade da sidebar, e `password_change_form.html` aplica estilos Tailwind aos campos do formulário.
 
-* **Atualização em Tempo Real:**
+* **`criar.html` - Atualização em Tempo Real:**
     * Listeners de eventos (`input`, `change`) são anexados aos campos do formulário (título, mensagem, upload de imagem, URL do vídeo, URL da música, seletores de cor).
-    * Quando um valor é alterado, a função `updatePreview()` é chamada.
-* **`updatePreview(themeTextColor = null)`:**
-    * Atualiza o conteúdo textual da pré-visualização (título, mensagem).
-    * Lê os valores dos seletores de cor ou dos campos de texto hexadecimais e aplica as cores de fundo e destaque ao container da pré-visualização e aos elementos de texto relevantes.
-    * Se uma imagem é selecionada, usa `FileReader` para lê-la como Data URL e exibi-la na pré-visualização.
-    * Processa a URL do vídeo:
-        * Chama `getEmbedUrl()` para converter URLs de visualização do YouTube/Vimeo em URLs de incorporação (embed).
-        * Atualiza o `src` do `<iframe>` de vídeo na pré-visualização.
-    * Atualiza o `src` do elemento `<audio>` para a URL da música e tenta carregar o áudio.
-    * Aplica a cor de texto `themeTextColor` à mensagem se um tema específico for aplicado.
-* **`getEmbedUrl(videoUrl)`:**
-    * Converte URLs de vídeo do YouTube (`watch?v=` para `embed/`) e Vimeo (`vimeo.com/ID` para `player.vimeo.com/video/ID`) para formatos adequados para incorporação em `<iframe>`.
-* **Sugestões de Tema:**
-    * `predefinedThemes`: Array de objetos JavaScript definindo temas (nome, cor de fundo, cor de destaque, cor do texto).
-    * `displayThemeSuggestions()`: Cria dinamicamente pequenas "amostras" de temas clicáveis.
-    * `applyTheme(theme)`: Ao clicar em uma sugestão de tema, esta função atualiza os valores dos campos de cor do formulário e chama `updatePreview()` para refletir o tema selecionado.
+    * A função `updatePreview()` é chamada para atualizar o conteúdo e estilo da pré-visualização.
+    * `getEmbedUrl(videoUrl)`: Converte URLs de vídeo do YouTube/Vimeo para formatos de incorporação.
+    * **Sugestões de Tema:** `predefinedThemes` (array de objetos) e funções `displayThemeSuggestions()` e `applyTheme(theme)` para preencher campos de cor e atualizar a pré-visualização.
+* **`base.html` - Sidebar Responsiva:**
+    * JavaScript para controlar a visibilidade da sidebar em telas menores via um botão "hamburger" e um overlay.
+* **`password_change_form.html` - Estilização de Formulário:**
+    * JavaScript para aplicar classes Tailwind CSS aos campos de input do formulário de alteração de senha e ocultar textos de ajuda.
 
 ## 7. API REST (Interface `app/api_urls.py`)
 
@@ -311,12 +293,9 @@ A aplicação expõe uma API RESTful para o recurso "Presente" através do Djang
 * **Operações Suportadas (via `PresenteViewSet`):**
     * **`GET /api/presentes/`**: Lista todos os presentes.
     * **`POST /api/presentes/`**: Cria um novo presente.
-        * Corpo da requisição: JSON com os dados do presente.
     * **`GET /api/presentes/<id>/`**: Recupera os detalhes de um presente específico.
     * **`PUT /api/presentes/<id>/`**: Atualiza completamente um presente existente.
-        * Corpo da requisição: JSON com todos os dados do presente.
     * **`PATCH /api/presentes/<id>/`**: Atualiza parcialmente um presente existente.
-        * Corpo da requisição: JSON com os campos a serem atualizados.
     * **`DELETE /api/presentes/<id>/`**: Exclui um presente existente.
 
     *Autenticação e permissões para a API não estão explicitamente detalhadas no `PresenteViewSet`, assumindo-se as configurações padrão do DRF (geralmente, acesso não autenticado para leitura e autenticado para escrita, a menos que configurado de outra forma).*
@@ -348,6 +327,7 @@ A aplicação expõe uma API RESTful para o recurso "Presente" através do Djang
     djangorestframework
     qrcode
     Pillow
+    django-jazzmin
     ```
     Então, instale as dependências:
     ```bash
@@ -363,7 +343,7 @@ A aplicação expõe uma API RESTful para o recurso "Presente" através do Djang
     ```bash
     python manage.py createsuperuser
     ```
-    Siga as instruções para definir nome de usuário, email (opcional)和 senha.
+    Siga as instruções para definir nome de usuário, email (opcional) e senha.
 7.  **Execução do Servidor de Desenvolvimento:**
     ```bash
     python manage.py runserver
@@ -406,6 +386,7 @@ Esta seção descreve potenciais melhorias e funcionalidades futuras para o proj
     * **Edição e Exclusão de Presentes:** Permitir que usuários autenticados editem ou excluam seus próprios presentes a partir do dashboard.
     * **Pré-visualização de Presentes no Dashboard:** Adicionar uma opção de pré-visualização rápida diretamente no dashboard.
     * **Compartilhamento Social:** Integrar botões de compartilhamento para redes sociais nas páginas de visualização de presentes.
+    * **Gestão de Status de Aprovação:** (Para administradores) uma interface mais intuitiva para gerenciar a aprovação/rejeição de presentes.
 * **Melhorias na API:**
     * **Autenticação e Permissões:** Implementar um sistema de autenticação mais granular para a API (ex: TokenAuthentication, OAuth2) e definir permissões de acesso aos endpoints.
     * **Documentação da API:** Gerar documentação interativa da API usando ferramentas como Swagger/OpenAPI (ex: `drf-yasg` ou `drf-spectacular`).
